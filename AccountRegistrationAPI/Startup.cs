@@ -30,6 +30,8 @@ namespace AccountRegistrationAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //try to inject the appSetting 
+            services.Configure<ApplicationSetting>(Configuration.GetSection("ApplicationSettings"));
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -37,9 +39,14 @@ namespace AccountRegistrationAPI
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "AccountRegistrationAPI", Version = "v1" });
             });
 
+            //this is how the dependecy injection work
             services.AddDbContext<AccountDetailContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DevConnection")));
 
+
+            //try to add the access 
+           // services.AddDefaultIdentity<AccountDetail>()
+             //   .AddEntityFrameworkStores<AuthenticationFailedContext>();
             services.AddCors();
 
 
