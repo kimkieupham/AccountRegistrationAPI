@@ -31,6 +31,28 @@ namespace AccountRegistrationAPI.Controllers
             _appSetting = appSetting.Value;
         }
 
+        //this is trying to use another web api for the register account of the user from the empty controller not the existing one 
+        [HttpPost]
+        [Route("Register")]
+        //Post: /api/ApplicationUser/Register
+        public async Task<Object> PostApplicationUser(AccountDetail model)
+        {
+            var applicationUser = new AccountDetail()
+            {
+                FullName = model.FullName,
+                GmailAccount = model.GmailAccount,
+                UserPassword = model.UserPassword,
+                ConfirmPassword = model.ConfirmPassword,
+            };
+            try
+            {
+                var result = await _userManager.CreateAsync(applicationUser);
+                return Ok(result);
+            }
+            catch (Exception ex) {
+                throw ex;
+            }
+        }
 
         //This is use for the http of the log in 
         [HttpPost]

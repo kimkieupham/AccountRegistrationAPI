@@ -109,6 +109,9 @@ namespace AccountRegistrationAPI.Controllers
         }
 
 
+        //POST: api/AccountDetails/
+
+
        
     }
 }

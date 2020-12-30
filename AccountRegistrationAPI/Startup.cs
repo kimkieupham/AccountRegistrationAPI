@@ -2,6 +2,7 @@ using AccountRegistrationAPI.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -39,14 +40,23 @@ namespace AccountRegistrationAPI
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "AccountRegistrationAPI", Version = "v1" });
             });
 
-            //this is how the dependecy injection work
+            //this is how the dependecy injection work, this is injected the authentication into the context
             services.AddDbContext<AccountDetailContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DevConnection")));
 
+            //try to add the access jfcccccc
+            //services.AddDefaultIdentity<AccountDetail>()
+            //.AddEntityFrameworkStores<AuthenticationContext>();
 
-            //try to add the access 
-           // services.AddDefaultIdentity<AccountDetail>()
-             //   .AddEntityFrameworkStores<AuthenticationFailedContext>();
+          /*  services.AddIdentity<AccountDetail, IdentityRole>(OptionsBuilderConfigurationExtensions =>
+            {
+                options.User.GmailAccount = false;
+
+            })
+                .AddEntityFrameworksStores<Providers.Database.EFProvider.DataContext>()
+                .AddDefaultTokenProviders(); */
+
+
             services.AddCors();
 
 
