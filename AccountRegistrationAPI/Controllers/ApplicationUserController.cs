@@ -19,21 +19,25 @@ namespace AccountRegistrationAPI.Controllers
     [ApiController]
     public class ApplicationUserController : ControllerBase
     {
-        private UserManager<AccountDetail> _userManager;
-        private SignInManager<AccountDetail> _signInManager;
+       // private UserManager<AccountDetail> _userManager;
+       // private SignInManager<AccountDetail> _signInManager;
         private readonly ApplicationSetting _appSetting;
+        private readonly AccountDetailContext _context;
+
 
         //inside the contructor ,we will  need to pass the two classes as the parameter . This will help us to access the injected instance 
-        public ApplicationUserController(UserManager<AccountDetail> userManager, SignInManager<AccountDetail> signInManager, IOptions<ApplicationSetting> appSetting)
+        public ApplicationUserController(IOptions<ApplicationSetting> appSetting, AccountDetailContext context)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+           // _userManager = userManager;
+          // _signInManager = signInManager;
             _appSetting = appSetting.Value;
+            _context = context;
+
         }
 
-        //this is trying to use another web api for the register account of the user from the empty controller not the existing one 
+        /*this is trying to use another web api for the register account of the user from the empty controller not the existing one 
         [HttpPost]
-        [Route("Register")]
+       // [Route("Register")]
         //Post: /api/ApplicationUser/Register
         public async Task<Object> PostApplicationUser(AccountDetail model)
         {
@@ -46,13 +50,13 @@ namespace AccountRegistrationAPI.Controllers
             };
             try
             {
-                var result = await _userManager.CreateAsync(applicationUser);
+                var result = await CreateAsync(applicationUser);
                 return Ok(result);
             }
             catch (Exception ex) {
                 throw ex;
             }
-        }
+        }*/
 
         //This is use for the http of the log in 
         [HttpPost]
@@ -60,32 +64,22 @@ namespace AccountRegistrationAPI.Controllers
         // POST: api/AccountDetails
         public async Task<IActionResult> Login(LoginDetail model) //we use the ;ogin, which have the password and username as the parameter and name it as model
         {
-            var user = await _userManager.FindByNameAsync(model.LoginUserName);//this is use to pass by and find the user name in the AccountDetails table DB Context 
-                                                                               // ^^^ need to find a way to pass the value in and do the checking with the findByNameAsync vs Find vs FindByName
-
-            //then we will do the compare to check if the value is matched with the one in the table, if it does then return 
-            if (user != null && await _userManager.CheckPasswordAsync(user, model.LoginPassword))//need to check for checkpasswordAsync vs check
+            //create the variable to store the fullname 
+            var checkName = _context.AccountDetails.Where(c => c.FullName == model.LoginUserName);//select * from AccountDetails where FullName == to login user name 
+            var checkPassword = _context.AccountDetails.Where(c => c.FullName == model.LoginUserName && c.UserPassword == model.LoginPassword); // select * from AccountDetails where FullName == loin user name and userpassword == to login passwoed 
+            //requirements
+            //checking the usename matches in database
+            if (checkName != null && checkPassword != null)
             {
-                var tokenDescriptior = new SecurityTokenDescriptor
-                {
-                    Subject = new System.Security.Claims.ClaimsIdentity(new Claim[]
-                    {
-                        new Claim("AccountID",user.AccountID.ToString())
-                    }),
-                    //adding the expires of the time
-                    Expires = DateTime.UtcNow.AddDays(1),
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSetting.JWT_Secret)), SecurityAlgorithms.HmacSha256Signature)
-                };
-                //then we need to have the token handler
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var securityToken = tokenHandler.CreateToken(tokenDescriptior);
-                var token = tokenHandler.WriteToken(securityToken);
-                return Ok(new { token });
+                //if the username is found inside the table we can go head to check the password 
+                //checking if the password matches in the database
+
+                return Ok(model); //return okay to indicate htat both username and password are both correct 
 
             }
-            else
+            else //otherwise, either password or username is incorrect then we go head return badrequest to indicate that username or password is incorrect 
             {
-                return BadRequest(new { message = "UserName or Password is incorrect." });//dispaly the error message if the user name and password is incorrect 
+                return BadRequest(new { message = "UserName or Password is incorrect" });
             }
         }
     }

@@ -107,11 +107,6 @@ namespace AccountRegistrationAPI.Controllers
         {
             return _context.AccountDetails.Any(e => e.AccountID == id);
         }
-
-
-        //POST: api/AccountDetails/
-
-
        
     }
 }

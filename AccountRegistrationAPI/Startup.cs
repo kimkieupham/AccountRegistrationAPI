@@ -40,7 +40,7 @@ namespace AccountRegistrationAPI
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "AccountRegistrationAPI", Version = "v1" });
             });
 
-            //this is how the dependecy injection work, this is injected the authentication into the context
+            //this is how the dependecy injection work, this is injected the authentication into the context, we register for the sql server with the entity frame work
             services.AddDbContext<AccountDetailContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DevConnection")));
 
