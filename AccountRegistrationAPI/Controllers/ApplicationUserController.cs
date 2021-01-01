@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -65,8 +66,8 @@ namespace AccountRegistrationAPI.Controllers
         public async Task<IActionResult> Login(LoginDetail model) //we use the ;ogin, which have the password and username as the parameter and name it as model
         {
             //create the variable to store the fullname 
-            var checkName = _context.AccountDetails.Where(c => c.FullName == model.LoginUserName);//select * from AccountDetails where FullName == to login user name 
-            var checkPassword = _context.AccountDetails.Where(c => c.FullName == model.LoginUserName && c.UserPassword == model.LoginPassword); // select * from AccountDetails where FullName == loin user name and userpassword == to login passwoed 
+            var checkName =  await _context.AccountDetails.FirstOrDefaultAsync(c => c.FullName == model.LoginUserName);//select * from AccountDetails where FullName == to login user name 
+            var checkPassword = await _context.AccountDetails.FirstOrDefaultAsync(c => c.FullName == model.LoginUserName && c.UserPassword == model.LoginPassword); // select * from AccountDetails where FullName == loin user name and userpassword == to login passwoed 
             //requirements
             //checking the usename matches in database
             if (checkName != null && checkPassword != null)
