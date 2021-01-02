@@ -35,30 +35,6 @@ namespace AccountRegistrationAPI.Controllers
             _context = context;
 
         }
-
-        /*this is trying to use another web api for the register account of the user from the empty controller not the existing one 
-        [HttpPost]
-       // [Route("Register")]
-        //Post: /api/ApplicationUser/Register
-        public async Task<Object> PostApplicationUser(AccountDetail model)
-        {
-            var applicationUser = new AccountDetail()
-            {
-                FullName = model.FullName,
-                GmailAccount = model.GmailAccount,
-                UserPassword = model.UserPassword,
-                ConfirmPassword = model.ConfirmPassword,
-            };
-            try
-            {
-                var result = await CreateAsync(applicationUser);
-                return Ok(result);
-            }
-            catch (Exception ex) {
-                throw ex;
-            }
-        }*/
-
         //This is use for the http of the log in 
         [HttpPost]
         [Route("Login")]
@@ -68,14 +44,32 @@ namespace AccountRegistrationAPI.Controllers
             //create the variable to store the fullname 
             var checkName =  await _context.AccountDetails.FirstOrDefaultAsync(c => c.FullName == model.LoginUserName);//select * from AccountDetails where FullName == to login user name 
             var checkPassword = await _context.AccountDetails.FirstOrDefaultAsync(c => c.FullName == model.LoginUserName && c.UserPassword == model.LoginPassword); // select * from AccountDetails where FullName == loin user name and userpassword == to login passwoed 
+            //this is the case trying if it's work for the quering in entity framework core with the Include 
+           /* var checkLogin = _context.AccountDetails.Where(e => e.FullName == model.LoginUserName).Include(model.LoginPassword).FirstOrDefault();*/
             //requirements
             //checking the usename matches in database
             if (checkName != null && checkPassword != null)
             {
+                //trying to create a new token and return a token from token description
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                        new Claim("AccountID", User.Identities.ToString())
+                    }),
+                    Expires = DateTime.UtcNow.AddDays(1),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes("1234567890123456")), SecurityAlgorithms.HmacSha256Signature)
+                    //aaa.bbb.ccc this is signiture used to create the signature part you have to take the encoded header, paylead and the verifity signiture that used to verify the message wasn't changed along the way
+                    //aa is header and bbb is payload and ccc is for signiture 
+                };
+                //this is use to handle the token that we create
+                var tokenHandler = new JwtSecurityTokenHandler();//handling the new web token 
+                var securityToken = tokenHandler.CreateToken(tokenDescriptor); //create the token from the previous creating with header,payload and signiture
+                var token = tokenHandler.WriteToken(securityToken);//write the web token 
                 //if the username is found inside the table we can go head to check the password 
                 //checking if the password matches in the database
 
-                return Ok(model); //return okay to indicate htat both username and password are both correct 
+                return Ok( new { token }); //return okay to indicate htat both username and password are both correct with the new token value, which we can use to work with the Authentication Guard
 
             }
             else //otherwise, either password or username is incorrect then we go head return badrequest to indicate that username or password is incorrect 
