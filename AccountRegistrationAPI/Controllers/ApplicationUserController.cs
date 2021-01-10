@@ -77,5 +77,52 @@ namespace AccountRegistrationAPI.Controllers
                 return BadRequest(new { message = "UserName or Password is incorrect" });
             }
         }
+
+
+        //this method use to update and make change to the password as reset the password 
+        [HttpPut] //this is the method for update or modify object 
+        [Route("resetPassword")]
+        public async Task <IActionResult> resetPassword(PasswordDetail modeldetail)
+        {
+            //create a var to check if the old password is match 
+            var checkPass = await _context.AccountDetails.FirstOrDefaultAsync(e => e.UserPassword == modeldetail.OldPassword);
+            var checkNamepass = await _context.AccountDetails.FirstOrDefaultAsync(c =>  c.UserPassword == modeldetail.OldPassword);
+            
+            //do the compare if the password of that username is existing inside the database then go head 
+            if (checkNamepass != null) 
+            {
+                //if there is a user and password match inside the database msqll then go head make change to the checkword 
+                checkNamepass.UserPassword = modeldetail.NewPassword;
+                checkNamepass.ConfirmPassword = modeldetail.ConfirmNewPassword;
+                await _context.SaveChangesAsync();
+
+
+                return Ok(modeldetail);
+            }
+            else //otherwise just return bad request which identity it's wrong
+            {
+                return BadRequest();
+            }
+        } 
+
+        //this method will be used to update or make change to the gmail or email 
+        [HttpPut] //which is use to change the email as user required
+        [Route("resetEGmail")]
+        public async Task <IActionResult> ResetGmail(PasswordDetail modeldetail)//need to pass in the gmail and the new once
+        {
+            //create a thing to check the current password and gmail
+            var checkUser = await _context.AccountDetails.FirstOrDefaultAsync(e => e.GmailAccount == modeldetail.CurrentGmail && e.UserPassword == modeldetail.OldPassword);
+            if(checkUser != null)
+            {
+                //then update the new gmail 
+                checkUser.GmailAccount = modeldetail.NewGmail;
+                await _context.SaveChangesAsync();//after doing the update we need to save the change 
+                return Ok(modeldetail);
+            }
+            else //in case,couldn't find the gmail and password
+            {
+                return BadRequest();
+            }
+        }
     }
 }
